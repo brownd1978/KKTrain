@@ -60,36 +60,40 @@ input_dataset = np.empty
 temp = np.empty
 signal = np.empty
 backgnd = np.empty
+##filter_name = "/dem|demtsh|demtshmc|demmc/i"
+DownstreamElectron = "dem"
+DownstreamElectronTrackStrawHit = "demtsh"
+DownstreamElectronTrackStrawHitMC = "demtshmc"
+DownstreamElectronMCTruth = "demmc"
+thing = "/" + DownstreamElectron + "|" + DownstreamElectronTrackStrawHit + "|" + DownstreamElectronTrackStrawHitMC + "|" + DownstreamElectronMCTruth + "/i"
+print(thing)
+
 files = open(file_list, 'r')
 for filename in files:
     print("Processing file " + filename)
-    # pathToFile = Path(filepath1 + filename)
-    # print (filepath1+filename)
-    # print(pathToFile)
-    # file = uproot.open(pathToFile)
     with uproot.open(filename) as file:
         for tree in treename:
-            trkana = file[tree]    ["trkana"].arrays(filter_name="/de|detsh|detshmc|demc/i") ##treename needs to be treenames[i
-            trkana = trkana[(trkana['de.goodfit']==1)&(trkana['de.status']>0)&(trkana['demc.proc']==167)]
-            hstate = ak.concatenate(trkana['detsh.state']).to_numpy()
-            udoca = ak.concatenate(trkana['detsh.udoca']).to_numpy()
+            trkana = file[tree]["trkana"].arrays(filter_name="/" + DownstreamElectron + "|" + DownstreamElectronTrackStrawHit + "|" + DownstreamElectronTrackStrawHitMC + "|" + DownstreamElectronMCTruth + "/i") ##treename needs to be a list of strings
+            trkana = trkana[(trkana['dem.goodfit']==1)&(trkana['dem.status']>0)&(trkana['demmc.proc']==167)]
+            hstate = ak.concatenate(trkana['demtsh.state']).to_numpy()
+            udoca = ak.concatenate(trkana['demtsh.udoca']).to_numpy()
             udoca = np.absolute(udoca)
-            cdrift = ak.concatenate(trkana['detsh.cdrift']).to_numpy()
-            rdrift = ak.concatenate(trkana['detsh.rdrift']).to_numpy()
-            tottdrift = ak.concatenate(trkana['detsh.tottdrift']).to_numpy()
-            sint = ak.concatenate(trkana['detsh.wdot']).to_numpy()
+            cdrift = ak.concatenate(trkana['demtsh.cdrift']).to_numpy()
+            rdrift = ak.concatenate(trkana['demtsh.rdrift']).to_numpy()
+            tottdrift = ak.concatenate(trkana['demtsh.tottdrift']).to_numpy()
+            sint = ak.concatenate(trkana['demtsh.wdot']).to_numpy()
             sint = np.sqrt(1.0-sint*sint)
             plen = 6.25-rdrift*rdrift
             pmin = np.repeat(0.25,plen.shape[0])
             plen = np.sqrt(np.maximum(plen,pmin))
-            udocasig = ak.concatenate(trkana['detsh.udocavar']).to_numpy()
+            udocasig = ak.concatenate(trkana['demtsh.udocavar']).to_numpy()
             udocasig = np.sqrt(udocasig)
-            wdist = ak.concatenate(trkana['detsh.wdist']).to_numpy()
-            uupos = ak.concatenate(trkana['detsh.uupos']).to_numpy()
+            wdist = ak.concatenate(trkana['demtsh.wdist']).to_numpy()
+            uupos = ak.concatenate(trkana['demtsh.uupos']).to_numpy()
             du = wdist-uupos
             du = np.absolute(du)
-            rho = np.square(ak.concatenate(trkana['detsh.poca.fCoordinates.fX']).to_numpy())
-            rho = np.add(rho,np.square(ak.concatenate(trkana['detsh.poca.fCoordinates.fY']).to_numpy()))
+            rho = np.square(ak.concatenate(trkana['demtsh.poca.fCoordinates.fX']).to_numpy())
+            rho = np.add(rho,np.square(ak.concatenate(trkana['demtsh.poca.fCoordinates.fY']).to_numpy()))
             rho = np.sqrt(rho)
             print("Processed file " + filename + " with %s hits"%hstate.shape[0])
             temp = np.vstack((udoca, cdrift, udocasig, tottdrift, du, rho)).T
@@ -98,8 +102,8 @@ for filename in files:
             else:
                 input_dataset = np.concatenate((input_dataset, temp))
             mcrel = []
-            for i, this_dt in enumerate(trkana['detsh.state']):
-                mcrel.extend(trkana['detshmc.rel._rel'][i][:len(this_dt)])
+            for i, this_dt in enumerate(trkana['demtsh.state']):
+                mcrel.extend(trkana['demtshmc.rel._rel'][i][:len(this_dt)])
             mcrel = np.array(mcrel)
             rand = np.random.random_sample([mcrel.shape[0]])
             sig = (hstate>=-2) & (rand<0.05) & (mcrel==0) & (udoca < 50.0) & (du < 3000.0)
