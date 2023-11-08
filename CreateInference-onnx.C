@@ -7,15 +7,16 @@
 /// \macro_code
 /// \macro_output
 /// \author Sanjiban Sengupta
-#include <String>
+///#include <String>
 using namespace TMVA::Experimental;
-
+#include "TMVA/Experimental/SOFIE/RModelParser_ONNX.hxx"
 void TMVA_SOFIE_ONNX(std::string inputFile = ""){
    if (inputFile.empty() )
       inputFile = std::string(gROOT->GetTutorialsDir()) + "/tmva/Linear_16.onnx";
 
     //Creating parser object to parse ONNX files
     SOFIE::RModelParser_ONNX parser;
+
     SOFIE::RModel model = parser.Parse(inputFile, true);
 
     //Generating inference code
