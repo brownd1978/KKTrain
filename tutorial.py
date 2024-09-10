@@ -12,8 +12,8 @@ import numpy as np
 
 files = ["/global/u2/j/jasonguo/KKTrain/TADeMCeEDigis.root"]
 
-data_fields = ["straw","rdrift"]
-mc_fields = ["pdg"]
+data_fields = ["state"]
+mc_fields = ["rel"]
 
 a = {field: [] for field in data_fields}
 for field in mc_fields:
@@ -24,8 +24,9 @@ for batch in uproot.iterate(files,filter_name="/trk|trktsh|trktshmc/i"):
     for field in data_fields:
         a[field].append(ak.flatten(ak.flatten(batch["trktsh"][field][cut])).to_numpy())
     for field in mc_fields:
-        a[field].append(ak.flatten(ak.flatten(batch["trktshmc"][field][ak.local_index(batch["trktshmc"][field]) < ak.num(batch["trktsh"][data_fields[0]],axis=2)])).to_numpy())
+        a[field].append(ak.flatten(ak.flatten(batch["trktshmc"][field][ak.local_index(batch["trktshmc"][field]) < ak.num(batch["trktsh"][data_fields[0]],axis=2)][cut])).to_numpy())
 for field in a:
     a[field] = np.concatenate(a[field])
-
-import pdb;pdb.set_trace()
+print (len(a["state"]))
+print(len(a["rel"]))
+#import pdb;pdb.set_trace()
