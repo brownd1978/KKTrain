@@ -10,9 +10,9 @@ import numpy as np
 #script working
 #cut picks out tracks with good status
 
-files = ["/global/u2/j/jasonguo/KKTrain/TADeMCeEDigis.root"]
+files = ["/global/cfs/cdirs/m3712/Mu2e/TA_CeEndpointMix1BBTriggerable.MDC2020ae_best_v1_3.root"]
 
-data_fields = ["state"]
+data_fields = ["state", "udoca", "cdrift", "rdrift", "tottdrift", "wdot", "udocavar", "wdist", "uupos", "poca"]
 mc_fields = ["rel"]
 
 a = {field: [] for field in data_fields}
@@ -24,7 +24,8 @@ for batch in uproot.iterate(files,filter_name="/trk|trktsh|trktshmc/i"):
     for field in data_fields:
         a[field].append(ak.flatten(ak.flatten(batch["trktsh"][field][cut])).to_numpy())
     for field in mc_fields:
-        a[field].append(ak.flatten(ak.flatten(batch["trktshmc"][field][ak.local_index(batch["trktshmc"][field]) < ak.num(batch["trktsh"][data_fields[0]],axis=2)][cut])).to_numpy())
+        a[field].append(ak.flatten(ak.flatten(batch["trktshmc"][field][ak.local_index(batch["trktshmc"][field]) < ak.num(batch["trktsh"]
+            [data_fields[0]], axis = 2)][cut])).to_numpy())
 for field in a:
     a[field] = np.concatenate(a[field])
 print (len(a["state"]))
